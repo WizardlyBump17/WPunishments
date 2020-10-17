@@ -4,7 +4,7 @@ import com.wizardlybump17.wpunishments.WPunishments;
 import com.wizardlybump17.wpunishments.api.punishable.Punishable;
 import com.wizardlybump17.wpunishments.api.punishable.Punishment;
 import com.wizardlybump17.wpunishments.api.punishable.manager.PunishableManager;
-import com.wizardlybump17.wpunishments.util.DateUtil;
+import com.wizardlybump17.wpunishments.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -21,15 +21,13 @@ public class AsyncPlayerChatListener extends CustomListener {
         PunishableManager punishableManager = plugin.getPunishableManager();
         if (!punishableManager.hasPunishable(player.getName())) return;
         Punishable punishable = punishableManager.getPunishable(player.getName());
-        if (!punishable.isPunished()) return;
-        Punishment punishment = punishable.getPunishment();
-        if (punishment.getType() != Punishment.PunishmentType.MUTE) return;
+        if (!punishable.isPunished() || !punishable.hasPunishment(Punishment.PunishmentType.MUTE)) return;
+        Punishment punishment = punishable.getPunishment(Punishment.PunishmentType.MUTE);
         if (System.currentTimeMillis() >= punishment.getExpiresIn() && !punishment.isPermanent()) {
-            punishable.setPunishment(null);
+            punishable.removePunishment(Punishment.PunishmentType.MUTE);
             return;
         }
-        String message = "§cYou are muted " + (punishment.isPermanent() ? "§lpermanently!" : "for §l" + DateUtil.getDifferenceBetween(System.currentTimeMillis(), punishment.getExpiresIn()) + ".");
-        player.sendMessage(message);
+        player.sendMessage(MessageUtil.getPunishmentMessage(punishment, MessageUtil.PunishmentMessageType.PUNISHED_ACTIVE_PUNISHMENT));
         event.setCancelled(true);
     }
 }
