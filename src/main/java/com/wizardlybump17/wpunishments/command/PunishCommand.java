@@ -4,7 +4,7 @@ import com.wizardlybump17.wpunishments.WPunishments;
 import com.wizardlybump17.wpunishments.api.punishable.Punishable;
 import com.wizardlybump17.wpunishments.api.punishable.Punishment;
 import com.wizardlybump17.wpunishments.api.punishable.manager.PunishableManager;
-import com.wizardlybump17.wpunishments.util.DateUtil;
+import com.wizardlybump17.wpunishments.util.MessageUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -38,39 +38,28 @@ public class PunishCommand extends CustomCommandExecutor {
         try {
             int time = Integer.parseInt(args[1]);
             Punishment.PunishmentType type = Punishment.PunishmentType.valueOf(args[2].toUpperCase());
-            if (punishable.isPunished() && System.currentTimeMillis() >= punishable.getPunishment().getExpiresIn() && !punishable.getPunishment().isPermanent()) punishable.setPunishment(null);
-            if (punishable.isPunished() && punishable.getPunishment().getType() == Punishment.PunishmentType.BAN) {
-                sender.sendMessage("§cCannot punish banned players!");
-                return true;
-            }
+            for (Punishment punishment : punishable.getPunishments())
+                if (System.currentTimeMillis() >= punishment.getExpiresIn())
+                    punishable.removePunishment(punishment.getType());
             String reason = args.length >= 4 ? StringUtils.join(args, ' ', 3, args.length) : null;
-            Punishment punishment = new Punishment(type, sender.getName(), time <= 0 ? 0 : System.currentTimeMillis() + time * 1000, System.currentTimeMillis(), reason);
-            punishable.setPunishment(punishment);
-            sender.sendMessage(new String[]{
-                    "§aYou punished " + target + "!",
-                    "§aDetails:",
-                    "§2Type: §f" + type,
-                    "§2Time: §f" + (punishment.isPermanent() ? "permanent" : DateUtil.getDifferenceBetween(punishment.getAppliedIn(), punishment.getExpiresIn())),
-                    "§2Reason: §f" + (reason == null ? "no reason given" : reason)
-            });
+            Punishment punishment = Punishment.builder()
+                    .type(type)
+                    .punished(target)
+                    .appliedIn(System.currentTimeMillis())
+                    .duration(time <= 0 ? 0 : time * 1000)
+                    .reason(reason)
+                    .whoPunished(sender.getName())
+                    .build();
+            punishable.addPunishment(punishment);
+            sender.sendMessage(MessageUtil.getPunishmentMessage(punishment, MessageUtil.PunishmentMessageType.WHO_PUNISHED_APPLIED));
             Player targetPlayer = Bukkit.getPlayerExact(target);
             if (targetPlayer == null) return true;
+            String targetMessage = MessageUtil.getPunishmentMessage(punishment, MessageUtil.PunishmentMessageType.PUNISHED_APPLIED);
             if (punishment.getType() == Punishment.PunishmentType.MUTE) {
-                targetPlayer.sendMessage(new String[]{
-                        "§cYou was muted by " + sender.getName() + "!",
-                        "§cDetails:",
-                        "§2Time: §f" + (punishment.isPermanent() ? "permanent" : DateUtil.getDifferenceBetween(punishment.getAppliedIn(), punishment.getExpiresIn())),
-                        "§2Reason: §f" + (reason == null ? "no reason given" : reason)
-                });
+                targetPlayer.sendMessage(targetMessage);
                 return true;
             }
-            targetPlayer.kickPlayer(StringUtils.join(new String[]{
-                            "§cYou was banned by " + sender.getName() + "!",
-                            "§cDetails:",
-                            "§2Time: §f" + (punishment.isPermanent() ? "permanent" : DateUtil.getDifferenceBetween(punishment.getAppliedIn(), punishment.getExpiresIn())),
-                            "§2Reason: §f" + (reason == null ? "no reason given" : reason)
-                    }, "\n")
-            );
+            targetPlayer.kickPlayer(targetMessage);
             return true;
         } catch (NumberFormatException exception) {
             sender.sendMessage("§cInvalid punishment time!");
