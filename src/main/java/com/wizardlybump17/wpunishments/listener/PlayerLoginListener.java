@@ -4,8 +4,7 @@ import com.wizardlybump17.wpunishments.WPunishments;
 import com.wizardlybump17.wpunishments.api.punishable.Punishable;
 import com.wizardlybump17.wpunishments.api.punishable.Punishment;
 import com.wizardlybump17.wpunishments.api.punishable.manager.PunishableManager;
-import com.wizardlybump17.wpunishments.util.DateUtil;
-import org.apache.commons.lang3.StringUtils;
+import com.wizardlybump17.wpunishments.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerLoginEvent;
@@ -22,20 +21,13 @@ public class PlayerLoginListener extends CustomListener {
         PunishableManager punishableManager = plugin.getPunishableManager();
         if (!punishableManager.hasPunishable(player.getName())) return;
         Punishable punishable = punishableManager.getPunishable(player.getName());
-        if (!punishable.isPunished()) return;
-        Punishment punishment = punishable.getPunishment();
-        if (punishment.getType() != Punishment.PunishmentType.BAN) return;
+        if (!punishable.isPunished() || !punishable.hasPunishment(Punishment.PunishmentType.BAN)) return;
+        Punishment punishment = punishable.getPunishment(Punishment.PunishmentType.BAN);
         if (System.currentTimeMillis() >= punishment.getExpiresIn() && !punishment.isPermanent()) {
-            punishable.setPunishment(null);
+            punishable.removePunishment(Punishment.PunishmentType.BAN);
             return;
         }
-        String message = StringUtils.join(new String[]{
-                "§cYou was banned by " + punishment.getWhoPunished() + "!",
-                "§cDetails:",
-                "§2Time left: §f" + (punishment.isPermanent() ? "permanent" : DateUtil.getDifferenceBetween(System.currentTimeMillis(), punishment.getExpiresIn())),
-                "§2Reason: §f" + (punishment.getReason() == null ? "no reason given" : punishment.getReason())
-        }, "\n");
         event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
-        event.setKickMessage(message);
+        event.setKickMessage(MessageUtil.getPunishmentMessage(punishment, MessageUtil.PunishmentMessageType.PUNISHED_ACTIVE_PUNISHMENT));
     }
 }
