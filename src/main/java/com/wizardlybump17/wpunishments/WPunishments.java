@@ -1,7 +1,7 @@
 package com.wizardlybump17.wpunishments;
 
 import com.wizardlybump17.wpunishments.api.punishable.manager.PunishableManager;
-import com.wizardlybump17.wpunishments.command.PunishCommand;
+import com.wizardlybump17.wpunishments.command.*;
 import com.wizardlybump17.wpunishments.implementation.punishable.manager.DefaultPunishableManager;
 import com.wizardlybump17.wpunishments.listener.AsyncPlayerChatListener;
 import com.wizardlybump17.wpunishments.listener.PlayerLoginListener;
@@ -31,6 +31,10 @@ public class WPunishments extends JavaPlugin {
         long start = System.currentTimeMillis();
         getLogger().info("Registering commands...");
         new PunishCommand(this);
+        new MuteCommand(this);
+        new BanCommand(this);
+        new UnmuteCommand(this);
+        new UnbanCommand(this);
         getLogger().info("Registered commands in " + (System.currentTimeMillis() - start) + "ms");
     }
 }
