@@ -4,3 +4,7 @@ main: com.wizardlybump17.wpunishments.${project.artifactId}
 version: ${project.version}
 commands:
   punish:
+  ban:
+  mute:
+  unmute:
+  unban:
