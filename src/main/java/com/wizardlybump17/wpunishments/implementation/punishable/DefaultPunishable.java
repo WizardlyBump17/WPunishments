@@ -30,6 +30,7 @@ public class DefaultPunishable implements Punishable {
         for (Punishment activePunishment : getPunishments()) {
             if (activePunishment.getType() != punishment.getType()) continue;
             activePunishment.setDuration(activePunishment.getDuration() + punishment.getDuration());
+            activePunishment.setPermanent(punishment.isPermanent());
             return;
         }
         punishments.add(punishment);
@@ -37,7 +38,7 @@ public class DefaultPunishable implements Punishable {
 
     @Override
     public void removePunishment(Punishment.PunishmentType type) {
-
+        punishments.removeIf(punishment -> punishment.getType() == type);
     }
 
     @Override
