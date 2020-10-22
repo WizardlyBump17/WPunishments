@@ -16,7 +16,8 @@ public class Punishment {
     @Setter
     private long duration;
     private final long appliedIn;
-    private final boolean permanent;
+    @Setter
+    private boolean permanent;
     private final String reason;
 
     public long getExpiresIn() {
