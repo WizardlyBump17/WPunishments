@@ -8,11 +8,9 @@ import org.bukkit.command.CommandExecutor;
 abstract class CustomCommandExecutor implements CommandExecutor {
 
     protected final WPunishments plugin;
-    private final String commandName;
 
     public CustomCommandExecutor(WPunishments plugin, String commandName) {
         this.plugin = plugin;
-        this.commandName = commandName;
         plugin.getCommand(commandName).setExecutor(this);
         plugin.getLogger().info("Registered the command executor of " + commandName);
     }
