@@ -25,10 +25,4 @@ public interface Punishable {
         for (Punishment punishment : getPunishments()) if (punishment.getType() == type) return punishment;
         return null;
     }
-
-    default OfflinePlayer getBukkitPlayer() {
-        for (OfflinePlayer offlinePlayer : Bukkit.getOfflinePlayers())
-            if (offlinePlayer.getName().equals(getName())) return offlinePlayer;
-        return null;
-    }
 }
